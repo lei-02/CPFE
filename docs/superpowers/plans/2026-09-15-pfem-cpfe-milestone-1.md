@@ -112,7 +112,7 @@ git commit -m "build: initialize PFEM-CPFE package"
 - Consumes: NumPy
 - Produces: `Case2Parameters.default()`, `MaterialState.initial(params)`, `TrialResult`, `commit_trial(state, trial)`
 
-- [ ] **Step 1: Write tests for CASE2 defaults and rollback-safe state**
+- [x] **Step 1: Write tests for CASE2 defaults and rollback-safe state**
 
 ```python
 import numpy as np
@@ -136,23 +136,23 @@ def test_trial_does_not_mutate_committed_state():
     assert not np.shares_memory(old.ssd, new.ssd)
 ```
 
-- [ ] **Step 2: Run tests and verify missing contracts**
+- [x] **Step 2: Run tests and verify missing contracts**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_contracts.py -v`
 
 Expected: FAIL on importing `pfem_cpfe.contracts`.
 
-- [ ] **Step 3: Implement the typed contracts**
+- [x] **Step 3: Implement the typed contracts**
 
 Use frozen dataclasses for `Case2Parameters` and `MaterialState`. Store `fp`, `orientation`, `stress`, `ssd`, `crss`, `slip`, and `slip_rate` as copied `float64` arrays. Define `TrialResult(stress, tangent, state, converged, iterations, reason)` and reject commit when `converged` is false.
 
-- [ ] **Step 4: Run contract tests**
+- [x] **Step 4: Run contract tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_contracts.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/contracts.py tests/test_contracts.py
