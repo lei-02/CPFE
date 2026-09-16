@@ -65,7 +65,7 @@ tests/                                 Unit, parity, integration, and benchmark-
 - Consumes: none
 - Produces: importable `pfem_cpfe` package and the standard command `python -m pytest`
 
-- [ ] **Step 1: Write the failing package-import test**
+- [x] **Step 1: Write the failing package-import test**
 
 ```python
 def test_package_exposes_version():
@@ -73,19 +73,19 @@ def test_package_exposes_version():
     assert pfem_cpfe.__version__ == "0.1.0"
 ```
 
-- [ ] **Step 2: Run the test and verify the package is absent**
+- [x] **Step 2: Run the test and verify the package is absent**
 
 Run: `python -m pytest tests/test_package.py -v`
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'pfem_cpfe'`.
 
-- [ ] **Step 3: Add the minimal package and dependency contract**
+- [x] **Step 3: Add the minimal package and dependency contract**
 
 Use Python `>=3.10,<3.12`. Declare runtime dependencies `numpy>=1.26,<3`, `scipy>=1.12,<2`, `torch>=2.4,<3`, `einops>=0.8,<1`; declare `pytest>=8,<10` in the `dev` extra. Configure pytest with `pythonpath = ["src"]` and `testpaths = ["tests"]`. Set `__version__ = "0.1.0"`.
 
 Ignore `.venv/`, `.fortran-reference/`, `artifacts/`, `__pycache__/`, `.pytest_cache/`, compiled extension files, and generated build directories. Keep the checked-in Oxford NPZ trace fixture trackable.
 
-- [ ] **Step 4: Create and verify the environment**
+- [x] **Step 4: Create and verify the environment**
 
 Run: `uv venv --python 3.11 .venv`
 
@@ -95,7 +95,7 @@ Run: `.venv/Scripts/python.exe -m pytest tests/test_package.py -v`
 
 Expected: PASS; `.venv/Scripts/python.exe -c "import torch; print(torch.cuda.is_available())"` prints `True` on the RTX 4060 Ti host.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pyproject.toml .python-version .gitignore README.md src/pfem_cpfe/__init__.py tests/test_package.py
