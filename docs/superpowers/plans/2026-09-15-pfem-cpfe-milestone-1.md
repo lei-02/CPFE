@@ -170,7 +170,7 @@ git commit -m "feat: define CPFE state and trial contracts"
 - Consumes: `MaterialState.orientation`
 - Produces: `fcc_slip_systems() -> tuple[ndarray, ndarray]`, `schmid_tensors(rotation)`, `rotation_from_rodrigues(vector)`, `project_rotation(matrix)`
 
-- [ ] **Step 1: Write crystallography tests**
+- [x] **Step 1: Write crystallography tests**
 
 ```python
 import numpy as np
@@ -190,23 +190,23 @@ def test_orientation_projection_returns_proper_rotation():
     assert schmid_tensors(r).shape == (12, 3, 3)
 ```
 
-- [ ] **Step 2: Run tests and verify they fail**
+- [x] **Step 2: Run tests and verify they fail**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/crystal/test_fcc.py -v`
 
 Expected: FAIL because `fcc.py` is absent.
 
-- [ ] **Step 3: Implement source-ordered FCC systems**
+- [x] **Step 3: Implement source-ordered FCC systems**
 
 Transcribe the 12 systems in the same order used by Oxford phase 2. Normalize each direction and plane normal, form `s tensor m`, and use an SVD polar projection with determinant correction for rotations.
 
-- [ ] **Step 4: Run crystallography tests**
+- [x] **Step 4: Run crystallography tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/crystal/test_fcc.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/crystal tests/crystal
