@@ -226,7 +226,7 @@ git commit -m "feat: add Oxford-ordered FCC crystallography"
 - Consumes: `Case2Parameters`, slip-system arrays, archived Oxford source
 - Produces: `double_exponential_slip`, `kocks_mecking_increment`, `total_and_forest_density`, `case2_slip_resistance`
 
-- [ ] **Step 1: Write equation-level tests**
+- [x] **Step 1: Write equation-level tests**
 
 ```python
 import numpy as np
@@ -250,21 +250,21 @@ def test_slip_rate_is_odd_and_saturates_at_reference_rate():
     assert rate[2] == p.gamma0
 ```
 
-- [ ] **Step 2: Add a manifest test against the supplied ZIP**
+- [x] **Step 2: Add a manifest test against the supplied ZIP**
 
 The manifest must read the archive path from `OXFORD_UMAT_ZIP`, extract text without modifying the archive, and assert these source facts: `case(2)`, `iphase=2`, `nslip=12`, `hardeningmodel=3`, `k1=0.129`, `k2=10`, and the Kocks-Mecking expression from `hardening.f`. Mark this test `reference` and skip with an explicit reason only when the environment variable is absent.
 
-- [ ] **Step 3: Run tests and verify missing laws**
+- [x] **Step 3: Run tests and verify missing laws**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_laws.py tests/reference/test_oxford_manifest.py -v`
 
 Expected: the equation tests FAIL before implementation; the manifest test PASS when `OXFORD_UMAT_ZIP` points to the supplied archive.
 
-- [ ] **Step 4: Implement NumPy laws exactly as source branches**
+- [x] **Step 4: Implement NumPy laws exactly as source branches**
 
 Implement the `ratio >= 1` saturation branch and the `0 < ratio < 1` thermally activated branch from `slip.f:306-460`. Implement the Kocks-Mecking branch from `hardening.f:278-317` and density projections from `crss.f:308-358`. Reject nonpositive temperature, Burgers vector, or CRSS.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_laws.py tests/reference/test_oxford_manifest.py -v`
 

@@ -30,6 +30,14 @@ class Case2Parameters:
     c44: float
     k1: float
     k2: float
+    gamma0: float
+    inner_exponent: float
+    outer_exponent: float
+    activation_energy_octahedral: float
+    activation_energy_cubic: float
+    boltzmann: float
+    geometric_factor: float
+    small_number: float
 
     @classmethod
     def default(cls) -> Case2Parameters:
@@ -43,6 +51,14 @@ class Case2Parameters:
             c44=83e3,
             k1=0.129,
             k2=10.0,
+            gamma0=1.0e6,
+            inner_exponent=0.7,
+            outer_exponent=1.3,
+            activation_energy_octahedral=2.97e-19,
+            activation_energy_cubic=1.17e-18,
+            boltzmann=1.380649e-23,
+            geometric_factor=0.3,
+            small_number=1.0e-20,
         )
 
 
