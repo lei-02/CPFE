@@ -428,7 +428,7 @@ git commit -m "feat: add differentiable CASE2 backend"
 - Consumes: Task 5 material backend
 - Produces: `c3d8_quadrature()`, `c3d8_shape(xi)`, `c3d8_kinematics(Xe, ue)`, `c3d8_response(Xe, ue, states_n, ...)`
 
-- [ ] **Step 1: Write partition, Jacobian, rigid-motion, and constant-strain tests**
+- [x] **Step 1: Write partition, Jacobian, rigid-motion, and constant-strain tests**
 
 In `tests/elements/conftest.py`, define `unit_cube` with the Oxford/Abaqus C3D8 node order `[(0,0,0), (1,0,0), (1,1,0), (0,1,0), (0,0,1), (1,0,1), (1,1,1), (0,1,1)]`.
 
@@ -444,23 +444,23 @@ def test_unit_cube_affine_displacement_has_constant_F(unit_cube):
     np.testing.assert_allclose(F, np.eye(3) + A, atol=1e-13)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/elements/test_c3d8.py -v`
 
 Expected: FAIL because `c3d8.py` is absent.
 
-- [ ] **Step 3: Implement 2 x 2 x 2 integration and element assembly**
+- [x] **Step 3: Implement 2 x 2 x 2 integration and element assembly**
 
 Return eight deformation gradients, integration weights, element internal force, `24 x 24` tangent, and eight trial states. Reject inverted reference or current Jacobians. Use finite differences to compare the assembled element tangent against the internal-force derivative.
 
-- [ ] **Step 4: Run element tests**
+- [x] **Step 4: Run element tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/elements/test_c3d8.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/elements tests/elements
