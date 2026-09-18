@@ -375,7 +375,7 @@ git commit -m "feat: add verified CASE2 material-point integrator"
 - Consumes: Task 5 update semantics and trace fixtures
 - Produces: `case2_step_torch(F_n, F_np1, dt, temperature, params, state_n) -> TorchTrialResult`
 
-- [ ] **Step 1: Write NumPy parity and gradient tests**
+- [x] **Step 1: Write NumPy parity and gradient tests**
 
 In `tests/materials/conftest.py`, define `case2_batch` from a deterministic two-point batch: identity `F_n`, `F_np1[0,0]=1.001`, `F_np1[0,1]=0.002`, CASE2 parameters, and copied initial states. The fixture exposes matching Torch inputs, NumPy results, a double-precision deformation tensor, and a scalar stress closure for `gradcheck`. Parametrize parity over CPU and CUDA, skipping the CUDA case explicitly when unavailable.
 
@@ -393,23 +393,23 @@ def test_stress_is_differentiable_with_respect_to_deformation(case2_batch):
     assert torch.autograd.gradcheck(case2_batch.stress_function, (F,), eps=1e-6, atol=2e-4, rtol=2e-3)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_torch.py -v`
 
 Expected: FAIL because `case2_torch` is absent.
 
-- [ ] **Step 3: Implement tensorized local integration**
+- [x] **Step 3: Implement tensorized local integration**
 
 Use `torch.float64` for parity tests and permit `float32` for training. Avoid NumPy conversions and in-place writes on tensors needed by autograd. Batch all integration points; return convergence masks and reason codes without silently dropping failed points.
 
-- [ ] **Step 4: Run parity and gradient tests on CPU and CUDA**
+- [x] **Step 4: Run parity and gradient tests on CPU and CUDA**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_torch.py -v`
 
 Expected: CPU cases PASS and CUDA cases PASS on this host; CUDA cases are explicitly SKIPPED on hosts without CUDA.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/materials/case2_torch.py tests/materials/conftest.py tests/materials/test_case2_torch.py
