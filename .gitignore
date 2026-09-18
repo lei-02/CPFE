@@ -10,6 +10,7 @@ __pycache__/
 *.py[cod]
 *.pyd
 *.so
+*.mod
 build/
 dist/
 *.egg-info/

@@ -280,6 +280,7 @@ git commit -m "feat: port source-locked CASE2 local laws"
 **Files:**
 - Create: `src/pfem_cpfe/materials/case2_numpy.py`
 - Create: `tools/oxford_reference/case2_reference.f90`
+- Create: `tools/oxford_reference/case2_trace_driver.f90`
 - Create: `tools/oxford_reference/build_reference.ps1`
 - Create: `tools/oxford_reference/generate_traces.py`
 - Create: `tests/fixtures/oxford_case2_trace.npz`
@@ -291,7 +292,7 @@ git commit -m "feat: port source-locked CASE2 local laws"
 - Consumes: `Case2Parameters`, `MaterialState`, Task 3 crystallography, Task 4 laws
 - Produces: `case2_step_numpy(F_n, F_np1, dt, temperature, params, state_n) -> TrialResult`
 
-- [ ] **Step 1: Write zero, elastic, rollback, and tangent tests**
+- [x] **Step 1: Write zero, elastic, rollback, and tangent tests**
 
 ```python
 import numpy as np
@@ -316,29 +317,28 @@ def test_invalid_trial_leaves_input_state_unchanged():
     np.testing.assert_array_equal(s.ssd, before)
 ```
 
-- [ ] **Step 2: Run tests and verify the integrator is absent**
+- [x] **Step 2: Run tests and verify the integrator is absent**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_numpy.py -v`
 
 Expected: FAIL on importing `case2_numpy`.
 
-- [ ] **Step 3: Implement the source-faithful semi-implicit update**
+- [x] **Step 3: Implement the source-faithful semi-implicit update**
 
 Use multiplicative kinematics `F = Fe @ Fp`, Oxford-ordered Schmid tensors, the double-exponential slip law, and the outer CRSS/SSD fixed-point loop. Return an uncommitted `TrialResult`; fail with a reason string for nonpositive determinant, nonfinite state, negative SSD/CRSS, or local iteration exhaustion. Compute the algorithmic `6 x 6` tangent using the same local Jacobian terms as the Oxford inner loop, and retain a finite-difference tangent test with relative tolerance `5e-4`.
 
-- [ ] **Step 4: Build the independent Fortran trace generator**
+- [x] **Step 4: Build the independent Fortran trace generator**
 
-`case2_reference.f90` must contain a single f2py-visible `case2_history` entry point and source-faithful copies of the CASE2 branches, with no Abaqus include or global database calls. `build_reference.ps1` shall run:
+`case2_reference.f90` must contain a single public `case2_history` entry point and source-faithful copies of the CASE2 branches, with no Abaqus include or global database calls. The Python-extension route was replaced with a pure Fortran trace executable because the available MinGW 5.3 Fortran compiler cannot link reliably against the current Python/UCRT C ABI. `build_reference.ps1` shall compile the standalone driver and then package its binary output:
 
 ```powershell
-conda create -p .fortran-reference -c conda-forge python=3.11 numpy m2w64-gcc-fortran -y
-.fortran-reference\python.exe -m numpy.f2py -c tools\oxford_reference\case2_reference.f90 -m oxford_case2_ref
-.fortran-reference\python.exe tools\oxford_reference\generate_traces.py --output tests\fixtures\oxford_case2_trace.npz
+conda create -p .fortran-reference -c conda-forge python=3.11 numpy=1.26 setuptools=68.2.2 m2w64-gcc-fortran -y
+tools\oxford_reference\build_reference.ps1
 ```
 
 Generate deterministic tension, compression, shear, unload, and reload histories into `tests/fixtures/oxford_case2_trace.npz`, including every step's `F`, stress, `Fp`, orientation, 12 slips, 12 SSDs, and 12 CRSS values.
 
-- [ ] **Step 5: Write and run parity tests**
+- [x] **Step 5: Write and run parity tests**
 
 Define `tests/reference/conftest.py::oxford_trace` to load the named arrays from the NPZ fixture. Define `replay_numpy_backend` in `test_case2_parity.py` to start from `MaterialState.initial`, call `case2_step_numpy` sequentially for every recorded deformation gradient, assert convergence at every step, and stack its outputs.
 
@@ -357,7 +357,7 @@ Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_numpy.py tes
 
 Expected: PASS. If the compiler cannot be installed, record the failed build command and stop parity sign-off rather than weakening tolerances.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pfem_cpfe/materials/case2_numpy.py tools/oxford_reference tests/fixtures/oxford_case2_trace.npz tests/materials/test_case2_numpy.py tests/reference/conftest.py tests/reference/test_case2_parity.py
