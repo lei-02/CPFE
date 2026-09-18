@@ -543,7 +543,7 @@ git commit -m "feat: add standalone incremental CPFE solver"
 - Consumes: contracts and Task 8 solver
 - Produces: `single_element_problem(seed)`, `eight_grain_problem(seed=20260915, cells=(4,4,4))`, `save_result(path, result)`, `load_result(path)`
 
-- [ ] **Step 1: Write deterministic mesh and result-schema tests**
+- [x] **Step 1: Write deterministic mesh and result-schema tests**
 
 In `tests/integration/conftest.py`, define `solved_eight_grain` as a deterministic, finite `IncrementResult` with the exact full-field shapes of the `4 x 4 x 4` problem. This keeps the I/O schema test fast; the command-line baseline below performs the actual nonlinear solve.
 
@@ -563,25 +563,25 @@ def test_result_contains_required_full_fields(tmp_path, solved_eight_grain):
     assert {"u", "stress", "strain", "slip", "orientation", "fp", "ssd", "crss", "residual", "timing"} <= set(data)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/mesh/test_voxel.py tests/integration/test_eight_grain.py -v`
 
 Expected: FAIL because mesh and I/O modules are absent.
 
-- [ ] **Step 3: Implement seeded Voronoi assignment and displacement control**
+- [x] **Step 3: Implement seeded Voronoi assignment and displacement control**
 
 Create the unit-cube node lattice and 64 C3D8 connectivities. Draw eight interior seed points and eight uniform random rotations from a fixed NumPy generator, assign each element centroid to its nearest seed, and retry the deterministic seed sequence until every grain is nonempty. Apply the approved bottom/top axial displacement constraints and minimal rigid-body constraints.
 
 Implement `save_result` as a stable compressed NPZ for arrays plus a sibling JSON file for schema version, convergence, residual history, iteration counts, and timing. Implement `pfem_cpfe.run_case` as the zero-start command that builds a named problem, advances every increment sequentially, commits history only on convergence, and writes both files.
 
-- [ ] **Step 4: Solve and persist the baseline**
+- [x] **Step 4: Solve and persist the baseline**
 
 Run: `.venv/Scripts/python.exe -m pfem_cpfe.run_case --case eight-grain --increments 20 --output artifacts/baseline-eight-grain`
 
 Expected: final convergence is true; all required fields are finite; no SSD is negative; the JSON contains per-increment Newton iterations and timing categories.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/mesh/test_voxel.py tests/integration/test_eight_grain.py -v`
 

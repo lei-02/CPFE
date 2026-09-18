@@ -78,24 +78,14 @@ def _cubic_stiffness(parameters: Case2Parameters, rotation: FloatArray) -> Float
             crystal[i, j, j, i] = parameters.c44
             crystal[j, i, i, j] = parameters.c44
             crystal[j, i, j, i] = parameters.c44
-    sample = np.zeros((3, 3, 3, 3))
-    for i in range(3):
-        for j in range(3):
-            for k in range(3):
-                for l in range(3):
-                    value = 0.0
-                    for ii in range(3):
-                        for jj in range(3):
-                            for kk in range(3):
-                                for ll in range(3):
-                                    value += (
-                                        rotation[i, ii]
-                                        * rotation[j, jj]
-                                        * rotation[k, kk]
-                                        * rotation[l, ll]
-                                        * crystal[ii, jj, kk, ll]
-                                    )
-                    sample[i, j, k, l] = value
+    sample = np.einsum(
+        "iI,jJ,kK,lL,IJKL->ijkl",
+        rotation,
+        rotation,
+        rotation,
+        rotation,
+        crystal,
+    )
     stiffness = np.empty((6, 6))
     for row, (i, j) in enumerate(_VOIGT_PAIRS):
         for column, (k, l) in enumerate(_VOIGT_PAIRS):

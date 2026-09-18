@@ -109,6 +109,8 @@ class CPFEProblem:
     external_force: FloatArray
     dt: float
     temperature: float
+    grain_ids: IntArray | None = None
+    orientations: FloatArray | None = None
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "nodes", _readonly(self.nodes))
@@ -121,12 +123,24 @@ class CPFEProblem:
         )
         object.__setattr__(self, "previous_u", _readonly(self.previous_u))
         object.__setattr__(self, "external_force", _readonly(self.external_force))
+        if self.grain_ids is not None:
+            object.__setattr__(self, "grain_ids", _readonly(self.grain_ids, np.int64))
+        if self.orientations is not None:
+            object.__setattr__(self, "orientations", _readonly(self.orientations))
         if self.nodes.ndim != 2 or self.nodes.shape[1] != 3:
             raise ValueError("Problem nodes must have shape (node_count, 3)")
         if self.elements.ndim != 2 or self.elements.shape[1] != 8:
             raise ValueError("Problem elements must have shape (element_count, 8)")
         if self.states.element_count != self.elements.shape[0]:
             raise ValueError("Material-state element count does not match mesh")
+        if self.grain_ids is not None and self.grain_ids.shape != (
+            self.elements.shape[0],
+        ):
+            raise ValueError("Grain IDs must contain one entry per element")
+        if self.orientations is not None and (
+            self.orientations.ndim != 3 or self.orientations.shape[1:] != (3, 3)
+        ):
+            raise ValueError("Grain orientations must have shape (grain_count, 3, 3)")
         if self.prescribed_dofs.shape != self.prescribed_values.shape:
             raise ValueError("Prescribed DOFs and values must have matching shapes")
         if self.previous_u.shape != (self.ndof,) or self.external_force.shape != (
