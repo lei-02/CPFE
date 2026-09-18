@@ -166,6 +166,23 @@ class CPFEProblem:
         mask[self.prescribed_dofs] = False
         return np.flatnonzero(mask)
 
+    @property
+    def fixed_dofs(self) -> IntArray:
+        """Alias used by operator-side boundary projection."""
+
+        return self.prescribed_dofs
+
+    @property
+    def prescribed_increment(self) -> FloatArray:
+        """Full global vector of displacement increments at constrained DOFs."""
+
+        values = np.zeros(self.ndof)
+        values[self.prescribed_dofs] = (
+            self.prescribed_values - self.previous_u[self.prescribed_dofs]
+        )
+        values.setflags(write=False)
+        return values
+
 
 @dataclass(frozen=True)
 class GlobalTrial:

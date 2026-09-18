@@ -606,7 +606,7 @@ git commit -m "feat: add deterministic eight-grain benchmark"
 - Consumes: PFEM-main physics-attention design, mesh, committed integration-point state
 - Produces: `TransolverCPFE`, `FeatureLayout`, `build_node_features(problem, state_n, load_step)`, `enforce_displacement_bc(raw_du, problem)`
 
-- [ ] **Step 1: Write shape, permutation, projection, and boundary tests**
+- [x] **Step 1: Write shape, permutation, projection, and boundary tests**
 
 In `tests/operator/conftest.py`, define `node_batch` from two padded deterministic meshes, and define `problem` plus `raw_du` so fixed and prescribed DOFs are known exactly.
 
@@ -621,21 +621,21 @@ def test_boundary_projection_is_exact(problem, raw_du):
     np.testing.assert_allclose(du[problem.fixed_dofs], problem.prescribed_increment[problem.fixed_dofs])
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/operator -v`
 
 Expected: FAIL because operator modules are absent.
 
-- [ ] **Step 3: Port the PFEM physics-attention structure**
+- [x] **Step 3: Port the PFEM physics-attention structure**
 
 Implement point-to-token slicing, token self-attention, and token-to-point deslicing with complexity `O(N + S^2)`. Use `torch.nn.init.trunc_normal_` so the package does not require `timm`. Support masks for padded batches and CPU/CUDA without embedded `.cuda()` calls.
 
-- [ ] **Step 4: Implement the fixed prompt layout**
+- [x] **Step 4: Implement the fixed prompt layout**
 
 Include normalized coordinates; prescribed-DOF mask and values; projected orientation matrix; projected `Fp`; 12 accumulated slips; 12 normalized SSD values; 12 normalized CRSS values; temperature; `dt`; load fraction; and CASE2 elastic, slip, and hardening parameters. Volume-average integration-point features to adjacent nodes only for prompting; keep committed physical state unchanged.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/operator -v`
 
