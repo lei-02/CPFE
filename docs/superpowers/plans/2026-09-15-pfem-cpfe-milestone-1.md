@@ -480,7 +480,7 @@ git commit -m "feat: implement C3D8 crystal-plasticity element"
 - Consumes: mesh arrays, element response, committed integration-point states
 - Produces: `assemble_trial(problem, u_trial, state_n) -> GlobalTrial`, `solve_increment(problem, state_n, u0, controls=None) -> IncrementResult`
 
-- [ ] **Step 1: Write convergence, equality, cutback, and rollback tests**
+- [x] **Step 1: Write convergence, equality, cutback, and rollback tests**
 
 In `tests/solver/conftest.py`, define `single_crystal_problem` with a copied initial `MaterialState`, a one-element mesh, one small displacement-controlled increment, and both zero and deterministic admissible initial guesses.
 
@@ -504,23 +504,23 @@ def test_failed_increment_preserves_committed_history(single_crystal_problem):
     np.testing.assert_array_equal(old.ssd, single_crystal_problem.states.ssd)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/solver/test_newton.py -v`
 
 Expected: FAIL because solver modules are absent.
 
-- [ ] **Step 3: Implement sparse assembly and safeguarded Newton**
+- [x] **Step 3: Implement sparse assembly and safeguarded Newton**
 
 Assemble a SciPy CSR tangent, eliminate prescribed DOFs, solve free increments with `scipy.sparse.linalg.spsolve`, and require both normalized residual and normalized correction tolerances. Backtrack line search over factors `1, 1/2, ..., 1/128`. On failure, recursively bisect the load increment up to `max_cutbacks`; commit integration-point states only after convergence.
 
-- [ ] **Step 4: Run solver tests**
+- [x] **Step 4: Run solver tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/solver/test_newton.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/solver tests/solver
