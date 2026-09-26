@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from time import perf_counter
 from typing import Sequence
 
 import numpy as np
@@ -49,6 +50,7 @@ class C3D8Response:
     trial_states: tuple[MaterialState, ...]
     converged: bool
     reason: str
+    timing: dict[str, float]
 
 
 def c3d8_quadrature() -> tuple[FloatArray, FloatArray]:
@@ -154,6 +156,8 @@ def c3d8_response(
 ) -> C3D8Response:
     """Assemble an uncommitted C3D8 constitutive response."""
 
+    start = perf_counter()
+    material_seconds = 0.0
     if len(states_n) != 8:
         raise ValueError("C3D8 requires exactly eight integration-point states")
     current = c3d8_kinematics(Xe, ue)
@@ -166,6 +170,7 @@ def c3d8_response(
     trial_states: list[MaterialState] = []
 
     for point in range(8):
+        material_start = perf_counter()
         trial = case2_step_numpy(
             previous.F[point],
             current.F[point],
@@ -174,6 +179,7 @@ def c3d8_response(
             parameters,
             states_n[point],
         )
+        material_seconds += perf_counter() - material_start
         if not trial.converged:
             return C3D8Response(
                 F=current.F,
@@ -183,6 +189,10 @@ def c3d8_response(
                 trial_states=tuple(states_n),
                 converged=False,
                 reason=f"integration point {point}: {trial.reason}",
+                timing={
+                    "material": material_seconds,
+                    "total": perf_counter() - start,
+                },
             )
         strain_displacement = _strain_displacement(current.gradients[point])
         weight = current.weights[point]
@@ -198,4 +208,8 @@ def c3d8_response(
         trial_states=tuple(trial_states),
         converged=True,
         reason="",
+        timing={
+            "material": material_seconds,
+            "total": perf_counter() - start,
+        },
     )

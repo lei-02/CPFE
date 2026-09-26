@@ -713,7 +713,7 @@ git commit -m "feat: train Transolver from CPFE equilibrium"
 - Consumes: zero-start solver, trained checkpoint, deterministic eight-grain problem
 - Produces: `run_benchmark(config) -> BenchmarkReport`, `artifacts/<run>/report.json`, full-field NPZ files
 
-- [ ] **Step 1: Write benchmark equivalence and accounting tests**
+- [x] **Step 1: Write benchmark equivalence and accounting tests**
 
 In `tests/benchmark/conftest.py`, define `benchmark_report` by running a two-increment single-element benchmark with an exact admissible-guess stub. It exercises both paths quickly while the milestone command below uses the trained operator and eight-grain problem.
 
@@ -734,29 +734,29 @@ def test_total_time_includes_inference_and_newton(benchmark_report):
     assert abs(benchmark_report.warm.total_seconds - expected) < 1e-9
 ```
 
-- [ ] **Step 2: Run tests and verify the report API is absent**
+- [x] **Step 2: Run tests and verify the report API is absent**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/benchmark/test_warm_start.py -v`
 
 Expected: FAIL because the benchmark report is absent.
 
-- [ ] **Step 3: Implement fair benchmark execution**
+- [x] **Step 3: Implement fair benchmark execution**
 
 Warm the GPU once, synchronize CUDA around timings, pin CPU thread counts, use identical increments and nonlinear/linear tolerances, and run at least five repetitions after warm-up. Record median and individual times for feature construction, operator inference, material integration, assembly, linear solves, Newton total, and end-to-end total. Record every fallback from an invalid operator guess.
 
-- [ ] **Step 4: Run the milestone benchmark**
+- [x] **Step 4: Run the milestone benchmark**
 
 Run: `.venv/Scripts/python.exe -m pfem_cpfe.benchmark --case eight-grain --checkpoint artifacts/patch/model.pt --increments 20 --repetitions 5 --output artifacts/milestone-1`
 
 Expected: both modes converge to the specified tolerances and the report contains actual iteration and time ratios. Treat a ratio below one as an experimental failure, not as a software-test failure or a reason to hide the result.
 
-- [ ] **Step 5: Run the full verification suite**
+- [x] **Step 5: Run the full verification suite**
 
 Run: `.venv/Scripts/python.exe -m pytest -v`
 
 Expected: PASS, including Oxford trace parity, Torch gradient checks, C3D8 patch tests, rollback tests, single-sample physics training, and warm/zero final-field equivalence.
 
-- [ ] **Step 6: Document exact reproduction commands and commit**
+- [x] **Step 6: Document exact reproduction commands and commit**
 
 Add README commands for environment setup, Oxford trace generation, zero-start solve, patch training, warm-start solve, and report interpretation.
 

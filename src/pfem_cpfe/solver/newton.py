@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, replace
 from time import perf_counter
+from typing import Mapping
 import warnings
 
 import numpy as np
@@ -51,7 +52,17 @@ def _failed_result(
     iterations: int = 0,
     cutbacks: int = 0,
     elapsed: float = 0.0,
+    detail: Mapping[str, float] | None = None,
 ) -> IncrementResult:
+    timing = {
+        "newton": elapsed,
+        "material": 0.0,
+        "assembly": 0.0,
+        "linear_solve": 0.0,
+    }
+    if detail is not None:
+        timing.update({name: float(value) for name, value in detail.items()})
+        timing["newton"] = elapsed
     return IncrementResult(
         u=problem.previous_u.copy(),
         states=state_n.copied(),
@@ -60,7 +71,7 @@ def _failed_result(
         iterations=iterations,
         cutbacks=cutbacks,
         reason=reason,
-        timing={"newton": elapsed},
+        timing=timing,
     )
 
 
@@ -79,9 +90,25 @@ def _newton_once(
     reference_residual = 1.0
     last_correction = 0.0
     residual = np.full(problem.ndof, np.nan)
+    material_seconds = 0.0
+    assembly_seconds = 0.0
+    linear_solve_seconds = 0.0
+
+    def record_trial(trial) -> None:
+        nonlocal material_seconds, assembly_seconds
+        material_seconds += trial.timing.get("material", 0.0)
+        assembly_seconds += trial.timing.get("assembly", 0.0)
+
+    def detailed_timing() -> dict[str, float]:
+        return {
+            "material": material_seconds,
+            "assembly": assembly_seconds,
+            "linear_solve": linear_solve_seconds,
+        }
 
     for iteration in range(controls.max_iterations + 1):
         trial = assemble_trial(problem, displacement, state_n)
+        record_trial(trial)
         if not trial.converged:
             return _failed_result(
                 problem,
@@ -89,6 +116,7 @@ def _newton_once(
                 trial.reason,
                 iterations=iteration,
                 elapsed=perf_counter() - start,
+                detail=detailed_timing(),
             )
         residual = trial.residual
         free_residual = residual[free]
@@ -120,7 +148,10 @@ def _newton_once(
                 iterations=iteration,
                 cutbacks=0,
                 reason="",
-                timing={"newton": perf_counter() - start},
+                timing={
+                    "newton": perf_counter() - start,
+                    **detailed_timing(),
+                },
             )
         if iteration == controls.max_iterations:
             break
@@ -131,19 +162,24 @@ def _newton_once(
                 "nonzero residual with no free degrees of freedom",
                 iterations=iteration,
                 elapsed=perf_counter() - start,
+                detail=detailed_timing(),
             )
         tangent_free = trial.tangent[free][:, free]
         try:
+            linear_start = perf_counter()
             with warnings.catch_warnings():
                 warnings.simplefilter("error", MatrixRankWarning)
                 correction = np.asarray(spsolve(tangent_free, -free_residual))
+            linear_solve_seconds += perf_counter() - linear_start
         except (MatrixRankWarning, RuntimeError, ValueError) as error:
+            linear_solve_seconds += perf_counter() - linear_start
             return _failed_result(
                 problem,
                 state_n,
                 f"linear solve failed: {error}",
                 iterations=iteration,
                 elapsed=perf_counter() - start,
+                detail=detailed_timing(),
             )
         if correction.shape != (free.size,) or not np.all(np.isfinite(correction)):
             return _failed_result(
@@ -152,6 +188,7 @@ def _newton_once(
                 "linear solve returned a nonfinite correction",
                 iterations=iteration,
                 elapsed=perf_counter() - start,
+                detail=detailed_timing(),
             )
 
         accepted = False
@@ -160,6 +197,7 @@ def _newton_once(
             candidate[free] += factor * correction
             candidate[problem.prescribed_dofs] = problem.prescribed_values
             candidate_trial = assemble_trial(problem, candidate, state_n)
+            record_trial(candidate_trial)
             if not candidate_trial.converged:
                 continue
             candidate_norm = float(
@@ -177,6 +215,7 @@ def _newton_once(
                 "line search failed to reduce the free residual",
                 iterations=iteration + 1,
                 elapsed=perf_counter() - start,
+                detail=detailed_timing(),
             )
 
     return _failed_result(
@@ -185,6 +224,7 @@ def _newton_once(
         "Newton iteration limit reached",
         iterations=controls.max_iterations,
         elapsed=perf_counter() - start,
+        detail=detailed_timing(),
     )
 
 
@@ -235,6 +275,7 @@ def _solve_recursive(
             iterations=midpoint.iterations,
             cutbacks=1 + midpoint.cutbacks,
             elapsed=midpoint.timing.get("newton", 0.0),
+            detail=midpoint.timing,
         )
     endpoint_problem = replace(
         problem,
@@ -253,6 +294,11 @@ def _solve_recursive(
             cutbacks=1 + midpoint.cutbacks + endpoint.cutbacks,
             elapsed=midpoint.timing.get("newton", 0.0)
             + endpoint.timing.get("newton", 0.0),
+            detail={
+                name: midpoint.timing.get(name, 0.0)
+                + endpoint.timing.get(name, 0.0)
+                for name in ("material", "assembly", "linear_solve")
+            },
         )
     return IncrementResult(
         u=endpoint.u,
@@ -263,8 +309,9 @@ def _solve_recursive(
         cutbacks=1 + midpoint.cutbacks + endpoint.cutbacks,
         reason="",
         timing={
-            "newton": midpoint.timing.get("newton", 0.0)
-            + endpoint.timing.get("newton", 0.0)
+            name: midpoint.timing.get(name, 0.0)
+            + endpoint.timing.get(name, 0.0)
+            for name in ("newton", "material", "assembly", "linear_solve")
         },
     )
 

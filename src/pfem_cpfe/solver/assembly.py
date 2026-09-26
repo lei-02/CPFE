@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from time import perf_counter
 
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
@@ -194,6 +195,7 @@ class GlobalTrial:
     states: GlobalMaterialState
     converged: bool
     reason: str
+    timing: dict[str, float]
 
 
 def _element_dofs(connectivity: IntArray) -> IntArray:
@@ -210,6 +212,8 @@ def assemble_trial(
 ) -> GlobalTrial:
     """Assemble an uncommitted global force, residual, and CSR tangent."""
 
+    start = perf_counter()
+    material_seconds = 0.0
     displacement = np.asarray(u_trial, dtype=np.float64)
     if displacement.shape != (problem.ndof,):
         raise ValueError("Trial displacement has the wrong global size")
@@ -245,7 +249,12 @@ def assemble_trial(
                 states=state_n.copied(),
                 converged=False,
                 reason=f"element {element_index}: {error}",
+                timing={
+                    "material": material_seconds,
+                    "assembly": perf_counter() - start - material_seconds,
+                },
             )
+        material_seconds += response.timing["material"]
         if not response.converged:
             zero = csr_matrix((problem.ndof, problem.ndof))
             return GlobalTrial(
@@ -255,6 +264,10 @@ def assemble_trial(
                 states=state_n.copied(),
                 converged=False,
                 reason=f"element {element_index}: {response.reason}",
+                timing={
+                    "material": material_seconds,
+                    "assembly": perf_counter() - start - material_seconds,
+                },
             )
         internal_force[dofs] += response.internal_force
         row_parts.append(np.repeat(dofs, 24))
@@ -280,4 +293,8 @@ def assemble_trial(
         states=GlobalMaterialState(tuple(trial_points)),
         converged=True,
         reason="",
+        timing={
+            "material": material_seconds,
+            "assembly": perf_counter() - start - material_seconds,
+        },
     )
