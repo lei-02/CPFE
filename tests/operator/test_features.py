@@ -13,6 +13,10 @@ def test_fixed_feature_layout_contains_all_cpfe_prompt_groups(problem):
     features = build_node_features(problem, problem.states, load_step=0.4)
 
     assert features.shape == (problem.nodes.shape[0], layout.width)
+    np.testing.assert_allclose(
+        features[:, layout.dt], np.log10(problem.dt / 1.0e-3)
+    )
+    assert np.max(np.abs(features)) < 100.0
     assert layout.orientation.stop - layout.orientation.start == 9
     assert layout.fp.stop - layout.fp.start == 9
     assert layout.slip.stop - layout.slip.start == 12

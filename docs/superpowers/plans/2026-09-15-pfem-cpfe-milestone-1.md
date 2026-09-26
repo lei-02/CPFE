@@ -660,7 +660,7 @@ git commit -m "feat: adapt PFEM Transolver to CPFE prompts"
 - Consumes: Task 6 differentiable backend, Task 7 C3D8 kinematics, Task 10 operator
 - Produces: `relative_equilibrium_loss(model, batch)`, `train_patch(config)`, checkpoint plus metrics JSON
 
-- [ ] **Step 1: Write loss-contract tests**
+- [x] **Step 1: Write loss-contract tests**
 
 In `tests/training/conftest.py`, define `unlabeled_case` with geometry, loads, boundary data, material parameters, and committed state only; define `equilibrated_case` from a zero-load rigidly constrained problem; and define `identity_predictor` to return its admissible zero increment. Define a small deterministic `model` fixture separately.
 
@@ -676,17 +676,17 @@ def test_exact_equilibrium_field_has_near_zero_loss(equilibrated_case, identity_
     assert loss.item() < 1e-10
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/training/test_physics_loss.py -v`
 
 Expected: FAIL because training modules are absent.
 
-- [ ] **Step 3: Implement explicit FE residual loss**
+- [x] **Step 3: Implement explicit FE residual loss**
 
 Compute `F` at eight Gauss points from predicted nodal increments with C3D8 shape gradients, call the batched Torch CASE2 backend, assemble free-DOF internal minus external force, and divide its squared norm by `F_scale^2 + epsilon`. Apply displacement constraints exactly before kinematics. Add finite penalties only for nonpositive determinants, negative SSD, invalid rotations, and failed local points.
 
-- [ ] **Step 4: Prove the one-sample PFEM patch test**
+- [x] **Step 4: Prove the one-sample PFEM patch test**
 
 Train one single-crystal sample with fixed seed and save the initial/final residual. The test shall use a small model and assert at least a 100-fold residual reduction without accessing a reference displacement field.
 
@@ -694,7 +694,7 @@ Run: `.venv/Scripts/python.exe -m pytest tests/training/test_physics_loss.py tes
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/training tests/training

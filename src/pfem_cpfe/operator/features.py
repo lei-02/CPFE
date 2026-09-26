@@ -180,7 +180,9 @@ def build_node_features(
     features[:, layout.ssd] = ssd / max(problem.parameters.rho0, 1.0e-12)
     features[:, layout.crss] = crss / max(problem.parameters.tauc0, 1.0e-12)
     features[:, layout.temperature] = problem.temperature / 1.0e3
-    features[:, layout.dt] = problem.dt / 1.0e-8
+    features[:, layout.dt] = np.log10(
+        max(problem.dt, np.finfo(np.float64).tiny) / 1.0e-3
+    )
     features[:, layout.load_fraction] = float(load_step)
     features[:, layout.material] = _material_prompt(problem)
     return features
