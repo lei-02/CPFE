@@ -1,1 +1,16 @@
 .worktrees/
+.venv/
+.python/
+.uv-cache/
+.uv-cache-cuda/
+.fortran-reference/
+artifacts/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.pyd
+*.so
+*.mod
+build/
+dist/
+*.egg-info/

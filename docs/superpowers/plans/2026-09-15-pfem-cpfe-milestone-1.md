@@ -65,7 +65,7 @@ tests/                                 Unit, parity, integration, and benchmark-
 - Consumes: none
 - Produces: importable `pfem_cpfe` package and the standard command `python -m pytest`
 
-- [ ] **Step 1: Write the failing package-import test**
+- [x] **Step 1: Write the failing package-import test**
 
 ```python
 def test_package_exposes_version():
@@ -73,19 +73,19 @@ def test_package_exposes_version():
     assert pfem_cpfe.__version__ == "0.1.0"
 ```
 
-- [ ] **Step 2: Run the test and verify the package is absent**
+- [x] **Step 2: Run the test and verify the package is absent**
 
 Run: `python -m pytest tests/test_package.py -v`
 
 Expected: FAIL with `ModuleNotFoundError: No module named 'pfem_cpfe'`.
 
-- [ ] **Step 3: Add the minimal package and dependency contract**
+- [x] **Step 3: Add the minimal package and dependency contract**
 
 Use Python `>=3.10,<3.12`. Declare runtime dependencies `numpy>=1.26,<3`, `scipy>=1.12,<2`, `torch>=2.4,<3`, `einops>=0.8,<1`; declare `pytest>=8,<10` in the `dev` extra. Configure pytest with `pythonpath = ["src"]` and `testpaths = ["tests"]`. Set `__version__ = "0.1.0"`.
 
 Ignore `.venv/`, `.fortran-reference/`, `artifacts/`, `__pycache__/`, `.pytest_cache/`, compiled extension files, and generated build directories. Keep the checked-in Oxford NPZ trace fixture trackable.
 
-- [ ] **Step 4: Create and verify the environment**
+- [x] **Step 4: Create and verify the environment**
 
 Run: `uv venv --python 3.11 .venv`
 
@@ -95,7 +95,7 @@ Run: `.venv/Scripts/python.exe -m pytest tests/test_package.py -v`
 
 Expected: PASS; `.venv/Scripts/python.exe -c "import torch; print(torch.cuda.is_available())"` prints `True` on the RTX 4060 Ti host.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add pyproject.toml .python-version .gitignore README.md src/pfem_cpfe/__init__.py tests/test_package.py
@@ -112,7 +112,7 @@ git commit -m "build: initialize PFEM-CPFE package"
 - Consumes: NumPy
 - Produces: `Case2Parameters.default()`, `MaterialState.initial(params)`, `TrialResult`, `commit_trial(state, trial)`
 
-- [ ] **Step 1: Write tests for CASE2 defaults and rollback-safe state**
+- [x] **Step 1: Write tests for CASE2 defaults and rollback-safe state**
 
 ```python
 import numpy as np
@@ -136,23 +136,23 @@ def test_trial_does_not_mutate_committed_state():
     assert not np.shares_memory(old.ssd, new.ssd)
 ```
 
-- [ ] **Step 2: Run tests and verify missing contracts**
+- [x] **Step 2: Run tests and verify missing contracts**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_contracts.py -v`
 
 Expected: FAIL on importing `pfem_cpfe.contracts`.
 
-- [ ] **Step 3: Implement the typed contracts**
+- [x] **Step 3: Implement the typed contracts**
 
 Use frozen dataclasses for `Case2Parameters` and `MaterialState`. Store `fp`, `orientation`, `stress`, `ssd`, `crss`, `slip`, and `slip_rate` as copied `float64` arrays. Define `TrialResult(stress, tangent, state, converged, iterations, reason)` and reject commit when `converged` is false.
 
-- [ ] **Step 4: Run contract tests**
+- [x] **Step 4: Run contract tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/test_contracts.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/contracts.py tests/test_contracts.py
@@ -170,7 +170,7 @@ git commit -m "feat: define CPFE state and trial contracts"
 - Consumes: `MaterialState.orientation`
 - Produces: `fcc_slip_systems() -> tuple[ndarray, ndarray]`, `schmid_tensors(rotation)`, `rotation_from_rodrigues(vector)`, `project_rotation(matrix)`
 
-- [ ] **Step 1: Write crystallography tests**
+- [x] **Step 1: Write crystallography tests**
 
 ```python
 import numpy as np
@@ -190,23 +190,23 @@ def test_orientation_projection_returns_proper_rotation():
     assert schmid_tensors(r).shape == (12, 3, 3)
 ```
 
-- [ ] **Step 2: Run tests and verify they fail**
+- [x] **Step 2: Run tests and verify they fail**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/crystal/test_fcc.py -v`
 
 Expected: FAIL because `fcc.py` is absent.
 
-- [ ] **Step 3: Implement source-ordered FCC systems**
+- [x] **Step 3: Implement source-ordered FCC systems**
 
 Transcribe the 12 systems in the same order used by Oxford phase 2. Normalize each direction and plane normal, form `s tensor m`, and use an SVD polar projection with determinant correction for rotations.
 
-- [ ] **Step 4: Run crystallography tests**
+- [x] **Step 4: Run crystallography tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/crystal/test_fcc.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/crystal tests/crystal
@@ -226,7 +226,7 @@ git commit -m "feat: add Oxford-ordered FCC crystallography"
 - Consumes: `Case2Parameters`, slip-system arrays, archived Oxford source
 - Produces: `double_exponential_slip`, `kocks_mecking_increment`, `total_and_forest_density`, `case2_slip_resistance`
 
-- [ ] **Step 1: Write equation-level tests**
+- [x] **Step 1: Write equation-level tests**
 
 ```python
 import numpy as np
@@ -250,21 +250,21 @@ def test_slip_rate_is_odd_and_saturates_at_reference_rate():
     assert rate[2] == p.gamma0
 ```
 
-- [ ] **Step 2: Add a manifest test against the supplied ZIP**
+- [x] **Step 2: Add a manifest test against the supplied ZIP**
 
 The manifest must read the archive path from `OXFORD_UMAT_ZIP`, extract text without modifying the archive, and assert these source facts: `case(2)`, `iphase=2`, `nslip=12`, `hardeningmodel=3`, `k1=0.129`, `k2=10`, and the Kocks-Mecking expression from `hardening.f`. Mark this test `reference` and skip with an explicit reason only when the environment variable is absent.
 
-- [ ] **Step 3: Run tests and verify missing laws**
+- [x] **Step 3: Run tests and verify missing laws**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_laws.py tests/reference/test_oxford_manifest.py -v`
 
 Expected: the equation tests FAIL before implementation; the manifest test PASS when `OXFORD_UMAT_ZIP` points to the supplied archive.
 
-- [ ] **Step 4: Implement NumPy laws exactly as source branches**
+- [x] **Step 4: Implement NumPy laws exactly as source branches**
 
 Implement the `ratio >= 1` saturation branch and the `0 < ratio < 1` thermally activated branch from `slip.f:306-460`. Implement the Kocks-Mecking branch from `hardening.f:278-317` and density projections from `crss.f:308-358`. Reject nonpositive temperature, Burgers vector, or CRSS.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_laws.py tests/reference/test_oxford_manifest.py -v`
 
@@ -280,6 +280,7 @@ git commit -m "feat: port source-locked CASE2 local laws"
 **Files:**
 - Create: `src/pfem_cpfe/materials/case2_numpy.py`
 - Create: `tools/oxford_reference/case2_reference.f90`
+- Create: `tools/oxford_reference/case2_trace_driver.f90`
 - Create: `tools/oxford_reference/build_reference.ps1`
 - Create: `tools/oxford_reference/generate_traces.py`
 - Create: `tests/fixtures/oxford_case2_trace.npz`
@@ -291,7 +292,7 @@ git commit -m "feat: port source-locked CASE2 local laws"
 - Consumes: `Case2Parameters`, `MaterialState`, Task 3 crystallography, Task 4 laws
 - Produces: `case2_step_numpy(F_n, F_np1, dt, temperature, params, state_n) -> TrialResult`
 
-- [ ] **Step 1: Write zero, elastic, rollback, and tangent tests**
+- [x] **Step 1: Write zero, elastic, rollback, and tangent tests**
 
 ```python
 import numpy as np
@@ -316,29 +317,28 @@ def test_invalid_trial_leaves_input_state_unchanged():
     np.testing.assert_array_equal(s.ssd, before)
 ```
 
-- [ ] **Step 2: Run tests and verify the integrator is absent**
+- [x] **Step 2: Run tests and verify the integrator is absent**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_numpy.py -v`
 
 Expected: FAIL on importing `case2_numpy`.
 
-- [ ] **Step 3: Implement the source-faithful semi-implicit update**
+- [x] **Step 3: Implement the source-faithful semi-implicit update**
 
 Use multiplicative kinematics `F = Fe @ Fp`, Oxford-ordered Schmid tensors, the double-exponential slip law, and the outer CRSS/SSD fixed-point loop. Return an uncommitted `TrialResult`; fail with a reason string for nonpositive determinant, nonfinite state, negative SSD/CRSS, or local iteration exhaustion. Compute the algorithmic `6 x 6` tangent using the same local Jacobian terms as the Oxford inner loop, and retain a finite-difference tangent test with relative tolerance `5e-4`.
 
-- [ ] **Step 4: Build the independent Fortran trace generator**
+- [x] **Step 4: Build the independent Fortran trace generator**
 
-`case2_reference.f90` must contain a single f2py-visible `case2_history` entry point and source-faithful copies of the CASE2 branches, with no Abaqus include or global database calls. `build_reference.ps1` shall run:
+`case2_reference.f90` must contain a single public `case2_history` entry point and source-faithful copies of the CASE2 branches, with no Abaqus include or global database calls. The Python-extension route was replaced with a pure Fortran trace executable because the available MinGW 5.3 Fortran compiler cannot link reliably against the current Python/UCRT C ABI. `build_reference.ps1` shall compile the standalone driver and then package its binary output:
 
 ```powershell
-conda create -p .fortran-reference -c conda-forge python=3.11 numpy m2w64-gcc-fortran -y
-.fortran-reference\python.exe -m numpy.f2py -c tools\oxford_reference\case2_reference.f90 -m oxford_case2_ref
-.fortran-reference\python.exe tools\oxford_reference\generate_traces.py --output tests\fixtures\oxford_case2_trace.npz
+conda create -p .fortran-reference -c conda-forge python=3.11 numpy=1.26 setuptools=68.2.2 m2w64-gcc-fortran -y
+tools\oxford_reference\build_reference.ps1
 ```
 
 Generate deterministic tension, compression, shear, unload, and reload histories into `tests/fixtures/oxford_case2_trace.npz`, including every step's `F`, stress, `Fp`, orientation, 12 slips, 12 SSDs, and 12 CRSS values.
 
-- [ ] **Step 5: Write and run parity tests**
+- [x] **Step 5: Write and run parity tests**
 
 Define `tests/reference/conftest.py::oxford_trace` to load the named arrays from the NPZ fixture. Define `replay_numpy_backend` in `test_case2_parity.py` to start from `MaterialState.initial`, call `case2_step_numpy` sequentially for every recorded deformation gradient, assert convergence at every step, and stack its outputs.
 
@@ -357,7 +357,7 @@ Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_numpy.py tes
 
 Expected: PASS. If the compiler cannot be installed, record the failed build command and stop parity sign-off rather than weakening tolerances.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/pfem_cpfe/materials/case2_numpy.py tools/oxford_reference tests/fixtures/oxford_case2_trace.npz tests/materials/test_case2_numpy.py tests/reference/conftest.py tests/reference/test_case2_parity.py
@@ -375,7 +375,7 @@ git commit -m "feat: add verified CASE2 material-point integrator"
 - Consumes: Task 5 update semantics and trace fixtures
 - Produces: `case2_step_torch(F_n, F_np1, dt, temperature, params, state_n) -> TorchTrialResult`
 
-- [ ] **Step 1: Write NumPy parity and gradient tests**
+- [x] **Step 1: Write NumPy parity and gradient tests**
 
 In `tests/materials/conftest.py`, define `case2_batch` from a deterministic two-point batch: identity `F_n`, `F_np1[0,0]=1.001`, `F_np1[0,1]=0.002`, CASE2 parameters, and copied initial states. The fixture exposes matching Torch inputs, NumPy results, a double-precision deformation tensor, and a scalar stress closure for `gradcheck`. Parametrize parity over CPU and CUDA, skipping the CUDA case explicitly when unavailable.
 
@@ -393,23 +393,23 @@ def test_stress_is_differentiable_with_respect_to_deformation(case2_batch):
     assert torch.autograd.gradcheck(case2_batch.stress_function, (F,), eps=1e-6, atol=2e-4, rtol=2e-3)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_torch.py -v`
 
 Expected: FAIL because `case2_torch` is absent.
 
-- [ ] **Step 3: Implement tensorized local integration**
+- [x] **Step 3: Implement tensorized local integration**
 
 Use `torch.float64` for parity tests and permit `float32` for training. Avoid NumPy conversions and in-place writes on tensors needed by autograd. Batch all integration points; return convergence masks and reason codes without silently dropping failed points.
 
-- [ ] **Step 4: Run parity and gradient tests on CPU and CUDA**
+- [x] **Step 4: Run parity and gradient tests on CPU and CUDA**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/materials/test_case2_torch.py -v`
 
 Expected: CPU cases PASS and CUDA cases PASS on this host; CUDA cases are explicitly SKIPPED on hosts without CUDA.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/materials/case2_torch.py tests/materials/conftest.py tests/materials/test_case2_torch.py
@@ -428,7 +428,7 @@ git commit -m "feat: add differentiable CASE2 backend"
 - Consumes: Task 5 material backend
 - Produces: `c3d8_quadrature()`, `c3d8_shape(xi)`, `c3d8_kinematics(Xe, ue)`, `c3d8_response(Xe, ue, states_n, ...)`
 
-- [ ] **Step 1: Write partition, Jacobian, rigid-motion, and constant-strain tests**
+- [x] **Step 1: Write partition, Jacobian, rigid-motion, and constant-strain tests**
 
 In `tests/elements/conftest.py`, define `unit_cube` with the Oxford/Abaqus C3D8 node order `[(0,0,0), (1,0,0), (1,1,0), (0,1,0), (0,0,1), (1,0,1), (1,1,1), (0,1,1)]`.
 
@@ -444,23 +444,23 @@ def test_unit_cube_affine_displacement_has_constant_F(unit_cube):
     np.testing.assert_allclose(F, np.eye(3) + A, atol=1e-13)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/elements/test_c3d8.py -v`
 
 Expected: FAIL because `c3d8.py` is absent.
 
-- [ ] **Step 3: Implement 2 x 2 x 2 integration and element assembly**
+- [x] **Step 3: Implement 2 x 2 x 2 integration and element assembly**
 
 Return eight deformation gradients, integration weights, element internal force, `24 x 24` tangent, and eight trial states. Reject inverted reference or current Jacobians. Use finite differences to compare the assembled element tangent against the internal-force derivative.
 
-- [ ] **Step 4: Run element tests**
+- [x] **Step 4: Run element tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/elements/test_c3d8.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/elements tests/elements
@@ -480,7 +480,7 @@ git commit -m "feat: implement C3D8 crystal-plasticity element"
 - Consumes: mesh arrays, element response, committed integration-point states
 - Produces: `assemble_trial(problem, u_trial, state_n) -> GlobalTrial`, `solve_increment(problem, state_n, u0, controls=None) -> IncrementResult`
 
-- [ ] **Step 1: Write convergence, equality, cutback, and rollback tests**
+- [x] **Step 1: Write convergence, equality, cutback, and rollback tests**
 
 In `tests/solver/conftest.py`, define `single_crystal_problem` with a copied initial `MaterialState`, a one-element mesh, one small displacement-controlled increment, and both zero and deterministic admissible initial guesses.
 
@@ -504,23 +504,23 @@ def test_failed_increment_preserves_committed_history(single_crystal_problem):
     np.testing.assert_array_equal(old.ssd, single_crystal_problem.states.ssd)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/solver/test_newton.py -v`
 
 Expected: FAIL because solver modules are absent.
 
-- [ ] **Step 3: Implement sparse assembly and safeguarded Newton**
+- [x] **Step 3: Implement sparse assembly and safeguarded Newton**
 
 Assemble a SciPy CSR tangent, eliminate prescribed DOFs, solve free increments with `scipy.sparse.linalg.spsolve`, and require both normalized residual and normalized correction tolerances. Backtrack line search over factors `1, 1/2, ..., 1/128`. On failure, recursively bisect the load increment up to `max_cutbacks`; commit integration-point states only after convergence.
 
-- [ ] **Step 4: Run solver tests**
+- [x] **Step 4: Run solver tests**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/solver/test_newton.py -v`
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/solver tests/solver
@@ -543,7 +543,7 @@ git commit -m "feat: add standalone incremental CPFE solver"
 - Consumes: contracts and Task 8 solver
 - Produces: `single_element_problem(seed)`, `eight_grain_problem(seed=20260915, cells=(4,4,4))`, `save_result(path, result)`, `load_result(path)`
 
-- [ ] **Step 1: Write deterministic mesh and result-schema tests**
+- [x] **Step 1: Write deterministic mesh and result-schema tests**
 
 In `tests/integration/conftest.py`, define `solved_eight_grain` as a deterministic, finite `IncrementResult` with the exact full-field shapes of the `4 x 4 x 4` problem. This keeps the I/O schema test fast; the command-line baseline below performs the actual nonlinear solve.
 
@@ -563,25 +563,25 @@ def test_result_contains_required_full_fields(tmp_path, solved_eight_grain):
     assert {"u", "stress", "strain", "slip", "orientation", "fp", "ssd", "crss", "residual", "timing"} <= set(data)
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/mesh/test_voxel.py tests/integration/test_eight_grain.py -v`
 
 Expected: FAIL because mesh and I/O modules are absent.
 
-- [ ] **Step 3: Implement seeded Voronoi assignment and displacement control**
+- [x] **Step 3: Implement seeded Voronoi assignment and displacement control**
 
 Create the unit-cube node lattice and 64 C3D8 connectivities. Draw eight interior seed points and eight uniform random rotations from a fixed NumPy generator, assign each element centroid to its nearest seed, and retry the deterministic seed sequence until every grain is nonempty. Apply the approved bottom/top axial displacement constraints and minimal rigid-body constraints.
 
 Implement `save_result` as a stable compressed NPZ for arrays plus a sibling JSON file for schema version, convergence, residual history, iteration counts, and timing. Implement `pfem_cpfe.run_case` as the zero-start command that builds a named problem, advances every increment sequentially, commits history only on convergence, and writes both files.
 
-- [ ] **Step 4: Solve and persist the baseline**
+- [x] **Step 4: Solve and persist the baseline**
 
 Run: `.venv/Scripts/python.exe -m pfem_cpfe.run_case --case eight-grain --increments 20 --output artifacts/baseline-eight-grain`
 
 Expected: final convergence is true; all required fields are finite; no SSD is negative; the JSON contains per-increment Newton iterations and timing categories.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/mesh/test_voxel.py tests/integration/test_eight_grain.py -v`
 
@@ -606,7 +606,7 @@ git commit -m "feat: add deterministic eight-grain benchmark"
 - Consumes: PFEM-main physics-attention design, mesh, committed integration-point state
 - Produces: `TransolverCPFE`, `FeatureLayout`, `build_node_features(problem, state_n, load_step)`, `enforce_displacement_bc(raw_du, problem)`
 
-- [ ] **Step 1: Write shape, permutation, projection, and boundary tests**
+- [x] **Step 1: Write shape, permutation, projection, and boundary tests**
 
 In `tests/operator/conftest.py`, define `node_batch` from two padded deterministic meshes, and define `problem` plus `raw_du` so fixed and prescribed DOFs are known exactly.
 
@@ -621,21 +621,21 @@ def test_boundary_projection_is_exact(problem, raw_du):
     np.testing.assert_allclose(du[problem.fixed_dofs], problem.prescribed_increment[problem.fixed_dofs])
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/operator -v`
 
 Expected: FAIL because operator modules are absent.
 
-- [ ] **Step 3: Port the PFEM physics-attention structure**
+- [x] **Step 3: Port the PFEM physics-attention structure**
 
 Implement point-to-token slicing, token self-attention, and token-to-point deslicing with complexity `O(N + S^2)`. Use `torch.nn.init.trunc_normal_` so the package does not require `timm`. Support masks for padded batches and CPU/CUDA without embedded `.cuda()` calls.
 
-- [ ] **Step 4: Implement the fixed prompt layout**
+- [x] **Step 4: Implement the fixed prompt layout**
 
 Include normalized coordinates; prescribed-DOF mask and values; projected orientation matrix; projected `Fp`; 12 accumulated slips; 12 normalized SSD values; 12 normalized CRSS values; temperature; `dt`; load fraction; and CASE2 elastic, slip, and hardening parameters. Volume-average integration-point features to adjacent nodes only for prompting; keep committed physical state unchanged.
 
-- [ ] **Step 5: Run tests and commit**
+- [x] **Step 5: Run tests and commit**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/operator -v`
 
@@ -660,7 +660,7 @@ git commit -m "feat: adapt PFEM Transolver to CPFE prompts"
 - Consumes: Task 6 differentiable backend, Task 7 C3D8 kinematics, Task 10 operator
 - Produces: `relative_equilibrium_loss(model, batch)`, `train_patch(config)`, checkpoint plus metrics JSON
 
-- [ ] **Step 1: Write loss-contract tests**
+- [x] **Step 1: Write loss-contract tests**
 
 In `tests/training/conftest.py`, define `unlabeled_case` with geometry, loads, boundary data, material parameters, and committed state only; define `equilibrated_case` from a zero-load rigidly constrained problem; and define `identity_predictor` to return its admissible zero increment. Define a small deterministic `model` fixture separately.
 
@@ -676,17 +676,17 @@ def test_exact_equilibrium_field_has_near_zero_loss(equilibrated_case, identity_
     assert loss.item() < 1e-10
 ```
 
-- [ ] **Step 2: Run tests and verify failure**
+- [x] **Step 2: Run tests and verify failure**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/training/test_physics_loss.py -v`
 
 Expected: FAIL because training modules are absent.
 
-- [ ] **Step 3: Implement explicit FE residual loss**
+- [x] **Step 3: Implement explicit FE residual loss**
 
 Compute `F` at eight Gauss points from predicted nodal increments with C3D8 shape gradients, call the batched Torch CASE2 backend, assemble free-DOF internal minus external force, and divide its squared norm by `F_scale^2 + epsilon`. Apply displacement constraints exactly before kinematics. Add finite penalties only for nonpositive determinants, negative SSD, invalid rotations, and failed local points.
 
-- [ ] **Step 4: Prove the one-sample PFEM patch test**
+- [x] **Step 4: Prove the one-sample PFEM patch test**
 
 Train one single-crystal sample with fixed seed and save the initial/final residual. The test shall use a small model and assert at least a 100-fold residual reduction without accessing a reference displacement field.
 
@@ -694,7 +694,7 @@ Run: `.venv/Scripts/python.exe -m pytest tests/training/test_physics_loss.py tes
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/pfem_cpfe/training tests/training
@@ -713,7 +713,7 @@ git commit -m "feat: train Transolver from CPFE equilibrium"
 - Consumes: zero-start solver, trained checkpoint, deterministic eight-grain problem
 - Produces: `run_benchmark(config) -> BenchmarkReport`, `artifacts/<run>/report.json`, full-field NPZ files
 
-- [ ] **Step 1: Write benchmark equivalence and accounting tests**
+- [x] **Step 1: Write benchmark equivalence and accounting tests**
 
 In `tests/benchmark/conftest.py`, define `benchmark_report` by running a two-increment single-element benchmark with an exact admissible-guess stub. It exercises both paths quickly while the milestone command below uses the trained operator and eight-grain problem.
 
@@ -734,29 +734,29 @@ def test_total_time_includes_inference_and_newton(benchmark_report):
     assert abs(benchmark_report.warm.total_seconds - expected) < 1e-9
 ```
 
-- [ ] **Step 2: Run tests and verify the report API is absent**
+- [x] **Step 2: Run tests and verify the report API is absent**
 
 Run: `.venv/Scripts/python.exe -m pytest tests/benchmark/test_warm_start.py -v`
 
 Expected: FAIL because the benchmark report is absent.
 
-- [ ] **Step 3: Implement fair benchmark execution**
+- [x] **Step 3: Implement fair benchmark execution**
 
 Warm the GPU once, synchronize CUDA around timings, pin CPU thread counts, use identical increments and nonlinear/linear tolerances, and run at least five repetitions after warm-up. Record median and individual times for feature construction, operator inference, material integration, assembly, linear solves, Newton total, and end-to-end total. Record every fallback from an invalid operator guess.
 
-- [ ] **Step 4: Run the milestone benchmark**
+- [x] **Step 4: Run the milestone benchmark**
 
 Run: `.venv/Scripts/python.exe -m pfem_cpfe.benchmark --case eight-grain --checkpoint artifacts/patch/model.pt --increments 20 --repetitions 5 --output artifacts/milestone-1`
 
 Expected: both modes converge to the specified tolerances and the report contains actual iteration and time ratios. Treat a ratio below one as an experimental failure, not as a software-test failure or a reason to hide the result.
 
-- [ ] **Step 5: Run the full verification suite**
+- [x] **Step 5: Run the full verification suite**
 
 Run: `.venv/Scripts/python.exe -m pytest -v`
 
 Expected: PASS, including Oxford trace parity, Torch gradient checks, C3D8 patch tests, rollback tests, single-sample physics training, and warm/zero final-field equivalence.
 
-- [ ] **Step 6: Document exact reproduction commands and commit**
+- [x] **Step 6: Document exact reproduction commands and commit**
 
 Add README commands for environment setup, Oxford trace generation, zero-start solve, patch training, warm-start solve, and report interpretation.
 
